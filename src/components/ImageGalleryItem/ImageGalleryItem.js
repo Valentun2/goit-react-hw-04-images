@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState } from 'react';
 import { Photo, PhotoModal } from './ImageGalleryItem.styled';
 import Modal from 'react-modal';
 
@@ -15,35 +15,30 @@ const customStyles = {
 };
 Modal.setAppElement('#root');
 
-class ImageGalleryItem extends Component {
-  state = {
-    isOpen: false,
+const ImageGalleryItem = props => {
+  const [isOpen, setIsOpen] = useState(false);
+  const onClick = () => {
+    setIsOpen(true);
   };
 
-  onClick = evt => {
-    this.setState({ isOpen: true });
+  const closeModal = () => {
+    setIsOpen(false);
   };
 
-  closeModal = () => {
-    this.setState({ isOpen: false });
-  };
+  return (
+    <>
+      <Photo src={props.src} alt="photo" onClick={onClick} />
 
-  render() {
-    return (
-      <>
-        <Photo src={this.props.src} alt='photo'  onClick={this.onClick} />
-
-        <Modal
-          isOpen={this.state.isOpen}
-          onRequestClose={this.closeModal}
-          style={customStyles}
-          contentLabel="Example Modal"
-        >
-          <PhotoModal src={this.props.srcModal} alt='photo' />
-        </Modal>
-      </>
-    );
-  }
-}
+      <Modal
+        isOpen={isOpen}
+        onRequestClose={closeModal}
+        style={customStyles}
+        contentLabel="Example Modal"
+      >
+        <PhotoModal src={props.srcModal} alt="photo" />
+      </Modal>
+    </>
+  );
+};
 
 export default ImageGalleryItem;

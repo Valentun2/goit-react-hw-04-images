@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import {  useEffect, useState } from 'react';
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import ButtonLoadMore from './ButtonLoadMore/ButtonLoadMore';
@@ -7,70 +7,62 @@ import { Container } from './Conteiner.styled';
 import { Watch } from 'react-loader-spinner';
 import toast, { Toaster } from 'react-hot-toast';
 
-export class App extends Component {
-  state = {
-    arrPhoto: [],
-    query: '',
-    page: 1,
-    visibleButton: false,
-    loading: false,
-  };
+export const App = () => {
+ 
+  const [photo, setPhoto] = useState([]);
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [visibleButton, setVisibleButton] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  handleSearch = value => {
-    if (value === this.state.query) {
+  const handleSearch = value => {
+    if (value === query) {
       return;
     }
-    this.setState({
-      arrPhoto: [],
-      query: value,
-      page: 1,
-      visibleButton: false,
-    });
+    setPhoto([]);
+    setQuery(value);
+    setPage(1);
+    setVisibleButton(false);
   };
 
-  handleLoadMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
+  const handleLoadMore = () => {
+    setPage(prev => prev + 1);
   };
 
-  async componentDidUpdate(_, prevState) {
-    if (
-      prevState.query !== this.state.query ||
-      prevState.page !== this.state.page
-    ) {
-      this.setState({ loading: true, visibleButton: false });
+
+  useEffect(() => {
+    async function getPhotoApi() {
+      if (query === '') {
+        return;
+      }
+      setLoading(true);
+      setVisibleButton(false);
       try {
-        const arrPictues = await getPhoto(this.state.query, this.state.page);
-        this.setState(prevState => ({
-          arrPhoto: [...prevState.arrPhoto, ...arrPictues.hits],
-        }));
-        if (arrPictues.totalHits / 12 > this.state.page) {
-          this.setState({ visibleButton: true });
+        const arrPictues = await getPhoto(query, page);
+        setPhoto([...photo, ...arrPictues.hits]);
+        if (arrPictues.totalHits / 12 > page) {
+          setVisibleButton(true);
         } else {
-          this.setState({ visibleButton: false });
+          setVisibleButton(false);
         }
       } catch (error) {
         toast.error('Error,try later');
       } finally {
-        this.setState({ loading: false });
+        setLoading(false);
       }
     }
-  }
+    getPhotoApi();
+  }, [query, page]);
 
-  render() {
-    return (
-      <>
-        <Searchbar onSearch={this.handleSearch} />
-        <Container>
-          {this.state.arrPhoto.length > 0 && (
-            <ImageGallery arr={this.state.arrPhoto} />
-          )}
-          <Watch visible={this.state.loading} />
-          {this.state.visibleButton && (
-            <ButtonLoadMore onloadMore={this.handleLoadMore} />
-          )}
-          <Toaster />
-        </Container>
-      </>
-    );
-  }
-}
+  return (
+    <>
+      <Searchbar onSearch={handleSearch} />
+      <Container>
+        {photo.length > 0 && <ImageGallery arr={photo} />}
+        <Watch visible={loading} />
+        {visibleButton && <ButtonLoadMore onloadMore={handleLoadMore} />}
+        <Toaster />
+      </Container>
+    </>
+  );
+};
