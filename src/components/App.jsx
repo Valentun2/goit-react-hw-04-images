@@ -39,7 +39,7 @@ export const App = () => {
       setVisibleButton(false);
       try {
         const arrPictues = await getPhoto(query, page);
-        setPhoto([...photo, ...arrPictues.hits]);
+        setPhoto(prev=>[...prev, ...arrPictues.hits]);
         if (arrPictues.totalHits / 12 > page) {
           setVisibleButton(true);
         } else {
